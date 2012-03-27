@@ -30,6 +30,9 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
+
+#include <stddef.h>
+
 #include "board.h"
 #include "exceptions.h"
 #include "board_lowlevel.h"
@@ -48,6 +51,7 @@ extern unsigned int _vect_start;
 extern unsigned int _sfixed;
 extern unsigned int _sfixed;
 extern unsigned int _efixed;
+extern unsigned int _etext;
 extern unsigned int _srelocate;
 extern unsigned int _erelocate;
 extern unsigned int _szero;
@@ -126,6 +130,32 @@ IntFunc exception_table[] = {
     IrqHandlerNotUsed   // 30 not used
 };
 
+//------------------------------------------------------------------------------
+/// Run C++ preinit and init arrays.
+/// These are constructors for static objects.
+/// Code from Mike Smith, 25 Mar 2012
+//------------------------------------------------------------------------------
+
+extern void (*__preinit_array_start []) (void) __attribute__((weak));
+extern void (*__preinit_array_end []) (void) __attribute__((weak));
+extern void (*__init_array_start []) (void) __attribute__((weak));
+extern void (*__init_array_end []) (void) __attribute__((weak));
+
+void __libc_init_array(void)
+{
+  size_t count;
+  size_t i;
+  count = __preinit_array_end - __preinit_array_start;
+  for (i = 0; i < count; i++)
+    __preinit_array_start[i] ();
+
+  count = __init_array_end - __init_array_start;
+  for (i = 0; i < count; i++)
+    __init_array_start[i] ();
+
+
+}
+
 
 //------------------------------------------------------------------------------
 /// This is the code that gets called on processor reset. To initialize the
@@ -145,7 +175,7 @@ void ResetException(void)
 #endif
 
     // Initialize data
-    pSrc = &_efixed;
+    pSrc = &_etext;
     pDest = &_srelocate;
     if (pSrc != pDest) {
         for(; pDest < &_erelocate;) {
@@ -167,6 +197,8 @@ void ResetException(void)
 #endif        
     
     AT91C_BASE_NVIC->NVIC_VTOFFR = ((unsigned int)(pSrc)) | (0x0 << 7);
+
+    __libc_init_array();
 
     main();
 }

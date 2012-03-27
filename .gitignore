@@ -2,4 +2,4 @@
 *.elf
 .*.swp
 libs
-demos
+demo
