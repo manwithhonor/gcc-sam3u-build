@@ -6,8 +6,10 @@
 TC := arm-none-eabi-
 
 CC := $(TC)gcc
+CXX := $(TC)g++
 LD := $(TC)gcc
 AR := $(TC)ar
+OBJCOPY := $(TC)objcopy
 
 # ########################################################################### #
 # Compiler Flags
@@ -15,7 +17,11 @@ AR := $(TC)ar
 
 OPTIMIZATION = -Os
 
-CFLAGS := -std=c99 -Wall -mthumb -mcpu=cortex-m3 \
+CFLAGS := -Wall -mthumb -mcpu=cortex-m3 \
+          -mlong-calls -ffunction-sections -g \
+          $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) \
+          -DTRACE_LEVEL=$(TRACE_LEVEL)
+CXXFLAGS := -Wall -mthumb -mcpu=cortex-m3 \
           -mlong-calls -ffunction-sections -g \
           $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) \
           -DTRACE_LEVEL=$(TRACE_LEVEL)
@@ -27,5 +33,5 @@ ASFLAGS := -mcpu=cortex-m3 -mthumb -Wall -g \
 LDFLAGS := -g $(OPTIMIZATION) -nostartfiles -mthumb -mcpu=cortex-m3 \
            -Wl,--gc-sections
 
-LDSCRIPT := $(AT91LIB)/boards/$(BOARD)/$(CHIP)/flash.lds
+LDSCRIPT := $(AT91LIB)/boards/$(BOARD)/$(CHIP)/cxx_flash.ld
 

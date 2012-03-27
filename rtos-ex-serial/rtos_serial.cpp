@@ -1,11 +1,13 @@
 
 #include <stdint.h>
 
+extern "C" {
 #include <utility/trace.h>
+}
 
 uint32_t fib(uint32_t);
 
-void main (void) {
+int main (void) {
   
   TRACE_CONFIGURE(TRACE_DBGU, 115200, BOARD_MCK);
   TRACE_INFO("hello world\n\n\n");
@@ -15,6 +17,7 @@ void main (void) {
       TRACE_INFO("fib %ld = %ld\n",i, fib(i));
     }
   }
+  return 0;
 }
 
 
@@ -27,13 +30,13 @@ uint32_t fib (uint32_t n) {
 
 /* FreeRTOS Callbacks */
 
-void vApplicationTickHook(void) {
+extern "C" void vApplicationTickHook(void) {
   static int i = 0;
   if (i < 1000) i++;
   else { TRACE_INFO("tick\n"); i = 0; }
 }
 
-void vApplicationStackOverflowHook(void) {
+extern "C" void vApplicationStackOverflowHook(void) {
   TRACE_ERROR("Stack Overflow!\n")
   for(;;);
 }
