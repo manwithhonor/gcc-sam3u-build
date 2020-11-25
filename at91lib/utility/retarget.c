@@ -50,6 +50,12 @@
 #include <dbgu/dbgu.h>
 #include <stdio.h>
 
+/* Avoid conflict with ferror defined as a macro, which is the case on some
+   systems.  */
+#ifdef ferror
+#undef ferror
+#endif
+
 // Disable semihosting
 #pragma import(__use_no_semihosting_swi) 
 
